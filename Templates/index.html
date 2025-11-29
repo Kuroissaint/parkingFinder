@@ -3,367 +3,169 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>UPI Smart Parking - 2 Lantai</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
-    />
+    <title>UPI Smart Parking - Layout 4 Blok</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
     <style>
-      /* CSS Tambahan Khusus Tombol Lantai */
-      .floor-switch {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
-      }
-      .btn-floor {
-        padding: 8px 16px;
-        border: 1px solid #cbd5e1;
-        background: #fff;
-        cursor: pointer;
-        border-radius: 6px;
-        font-weight: 600;
-        color: #64748b;
-        transition: 0.2s;
-      }
-      .btn-floor:hover {
-        background: #f1f5f9;
-      }
-      .btn-floor.active {
-        background: #2563eb;
-        color: white;
-        border-color: #2563eb;
-      }
+      .floor-switch { display: flex; gap: 10px; margin-bottom: 10px; }
+      .btn-floor { padding: 8px 16px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; border-radius: 6px; font-weight: 600; color: #64748b; transition: 0.2s; }
+      .btn-floor:hover { background: #f1f5f9; }
+      .btn-floor.active { background: #2563eb; color: white; border-color: #2563eb; }
+      .slot-group text { text-anchor: middle; font-family: sans-serif; font-size: 11px; font-weight: bold; }
     </style>
   </head>
   <body>
     <header>
       <h1>UPI Smart Parking</h1>
-      <div class="badge">System Online: 2 Floors</div>
+      <div class="badge">System Online</div>
     </header>
 
     <div class="wrap">
       <main class="card map-area">
         <div class="map-head">
-          <strong>Denah Parkir Motor</strong>
-
+          <strong>Denah Parkir Luas</strong>
           <div class="floor-switch">
-            <button class="btn-floor active" onclick="switchFloor(1)">
-              Lantai 1
-            </button>
-            <button class="btn-floor" onclick="switchFloor(2)">Lantai 2</button>
+            <button class="btn-floor active" id="btnF1" onclick="switchFloor(1)">Lantai 1</button>
+            <button class="btn-floor" id="btnF2" onclick="switchFloor(2)">Lantai 2</button>
           </div>
         </div>
 
         <div class="viewport">
-          <svg
-            id="mapSVG"
-            viewBox="0 0 600 420"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg id="mapSVG" viewBox="0 0 600 420" xmlns="http://www.w3.org/2000/svg">
+            
             <g id="layer-f1">
-              <path
-                d="M50 50 L550 50 L550 350 L50 350 L50 50"
-                stroke="#dbeafe"
-                stroke-width="40"
-                stroke-linecap="round"
-                fill="none"
-                stroke-linejoin="round"
-              />
+              <path d="M50 50 L550 50 L550 370 L50 370 L50 50" stroke="#dbeafe" stroke-width="30" stroke-linecap="round" fill="none" stroke-linejoin="round" />
+              
+              <line x1="50" y1="210" x2="550" y2="210" stroke="#dbeafe" stroke-width="30" stroke-linecap="round" />
+              
+              <line x1="300" y1="50" x2="300" y2="370" stroke="#dbeafe" stroke-width="30" stroke-linecap="round" />
+              
+              <rect x="520" y="20" width="60" height="30" fill="#fbbf24" rx="4" />
+              <text x="550" y="40" font-size="9" text-anchor="middle" font-weight="bold">NAIK (Lt 2)</text>
+              <text x="550" y="400" font-size="12" text-anchor="middle" font-weight="bold">MASUK ➡</text>
+              <text x="50" y="400" font-size="12" text-anchor="middle" font-weight="bold">⬅ KELUAR</text>
 
-              <rect
-                x="520"
-                y="20"
-                width="60"
-                height="40"
-                fill="#fbbf24"
-                rx="4"
-              />
-              <text
-                x="550"
-                y="45"
-                text-anchor="middle"
-                font-weight="bold"
-                font-size="10"
-              >
-                NAIK (Lt 2)
-              </text>
-
-              <text
-                x="550"
-                y="390"
-                text-anchor="middle"
-                font-weight="bold"
-                font-size="12"
-              >
-                MASUK ➡
-              </text>
-              <text
-                x="50"
-                y="390"
-                text-anchor="middle"
-                font-weight="bold"
-                font-size="12"
-              >
-                ⬅ KELUAR
-              </text>
-
-              <g
-                class="slot-group"
-                transform="translate(200, 150)"
-                data-slot="A1"
-                data-status="empty"
-                data-floor="1"
-              >
-                <rect class="slot-bg" x="-25" y="-20" width="50" height="40" />
-                <text y="5">A1</text>
+              <g transform="translate(120, 90)">
+                <g class="slot-group" data-slot="L1-A1" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-A1</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L1-A2" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-A2</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L1-A3" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-A3</text></g>
               </g>
-              <g
-                class="slot-group"
-                transform="translate(260, 150)"
-                data-slot="A2"
-                data-status="empty"
-                data-floor="1"
-              >
-                <rect class="slot-bg" x="-25" y="-20" width="50" height="40" />
-                <text y="5">A2</text>
+              <g transform="translate(360, 90)">
+                <g class="slot-group" data-slot="L1-A4" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-A4</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L1-A5" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-A5</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L1-A6" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-A6</text></g>
               </g>
-              <g
-                class="slot-group"
-                transform="translate(320, 150)"
-                data-slot="A3"
-                data-status="empty"
-                data-floor="1"
-              >
-                <rect class="slot-bg" x="-25" y="-20" width="50" height="40" />
-                <text y="5">A3</text>
+              
+              <g transform="translate(120, 150)">
+                <g class="slot-group" data-slot="L1-A7" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-A7</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L1-A8" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-A8</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L1-A9" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-A9</text></g>
               </g>
-              <g
-                class="slot-group"
-                transform="translate(380, 150)"
-                data-slot="A4"
-                data-status="empty"
-                data-floor="1"
-              >
-                <rect class="slot-bg" x="-25" y="-20" width="50" height="40" />
-                <text y="5">A4</text>
+              <g transform="translate(360, 150)">
+                <g class="slot-group" data-slot="L1-A10" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-A10</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L1-A11" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-A11</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L1-A12" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-A12</text></g>
               </g>
 
-              <g
-                class="slot-group"
-                transform="translate(200, 220)"
-                data-slot="A5"
-                data-status="empty"
-                data-floor="1"
-              >
-                <rect class="slot-bg" x="-25" y="-20" width="50" height="40" />
-                <text y="5">A5</text>
+              <g transform="translate(120, 270)">
+                <g class="slot-group" data-slot="L1-B1" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-B1</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L1-B2" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-B2</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L1-B3" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-B3</text></g>
               </g>
-              <g
-                class="slot-group"
-                transform="translate(260, 220)"
-                data-slot="A6"
-                data-status="empty"
-                data-floor="1"
-              >
-                <rect class="slot-bg" x="-25" y="-20" width="50" height="40" />
-                <text y="5">A6</text>
+              <g transform="translate(360, 270)">
+                <g class="slot-group" data-slot="L1-B4" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-B4</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L1-B5" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-B5</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L1-B6" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-B6</text></g>
               </g>
-              <g
-                class="slot-group"
-                transform="translate(320, 220)"
-                data-slot="A7"
-                data-status="empty"
-                data-floor="1"
-              >
-                <rect class="slot-bg" x="-25" y="-20" width="50" height="40" />
-                <text y="5">A7</text>
+
+              <g transform="translate(120, 330)">
+                <g class="slot-group" data-slot="L1-B7" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-B7</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L1-B8" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-B8</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L1-B9" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-B9</text></g>
               </g>
-              <g
-                class="slot-group"
-                transform="translate(380, 220)"
-                data-slot="A8"
-                data-status="empty"
-                data-floor="1"
-              >
-                <rect class="slot-bg" x="-25" y="-20" width="50" height="40" />
-                <text y="5">A8</text>
+              <g transform="translate(360, 330)">
+                <g class="slot-group" data-slot="L1-B10" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-B10</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L1-B11" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-B11</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L1-B12" data-status="empty" data-floor="1"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L1-B12</text></g>
               </g>
             </g>
 
-            <g id="layer-f2" style="display: none">
-              <path
-                d="M550 50 L550 350 L50 350 L50 50"
-                stroke="#e0e7ff"
-                stroke-width="40"
-                stroke-linecap="round"
-                fill="none"
-                stroke-linejoin="round"
-              />
+            <g id="layer-f2">
+              <path d="M50 50 L550 50 L550 370 L50 370 L50 50" stroke="#dbeafe" stroke-width="30" stroke-linecap="round" fill="none" stroke-linejoin="round" />
+              <line x1="50" y1="210" x2="550" y2="210" stroke="#dbeafe" stroke-width="30" stroke-linecap="round" />
+              <line x1="300" y1="50" x2="300" y2="370" stroke="#dbeafe" stroke-width="30" stroke-linecap="round" />
+              
+              <rect x="520" y="20" width="60" height="30" fill="#fbbf24" rx="4" />
+              <text x="550" y="40" font-size="9" text-anchor="middle" font-weight="bold">NAIK (Lt 2)</text>
+              <text x="550" y="400" font-size="12" text-anchor="middle" font-weight="bold">MASUK ➡</text>
+              <text x="50" y="400" font-size="12" text-anchor="middle" font-weight="bold">⬅ KELUAR</text>
 
-              <rect
-                x="20"
-                y="20"
-                width="60"
-                height="40"
-                fill="#fbbf24"
-                rx="4"
-              />
-              <text
-                x="50"
-                y="45"
-                text-anchor="middle"
-                font-weight="bold"
-                font-size="10"
-              >
-                TURUN (Lt 1)
-              </text>
-
-              <rect
-                x="520"
-                y="20"
-                width="60"
-                height="40"
-                fill="#cbd5e1"
-                rx="4"
-              />
-              <text
-                x="550"
-                y="45"
-                text-anchor="middle"
-                font-weight="bold"
-                font-size="10"
-              >
-                DARI Lt 1
-              </text>
-
-              <g
-                class="slot-group"
-                transform="translate(50, 100)"
-                data-slot="L1"
-                data-status="empty"
-                data-floor="2"
-              >
-                <rect class="slot-bg" x="-20" y="-15" width="40" height="30" />
-                <text y="5">L1</text>
+              <g transform="translate(120, 90)">
+                <g class="slot-group" data-slot="L2-A1" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-A1</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L2-A2" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-A2</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L2-A3" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-A3</text></g>
               </g>
-              <g
-                class="slot-group"
-                transform="translate(50, 150)"
-                data-slot="L2"
-                data-status="empty"
-                data-floor="2"
-              >
-                <rect class="slot-bg" x="-20" y="-15" width="40" height="30" />
-                <text y="5">L2</text>
+              <g transform="translate(360, 90)">
+                <g class="slot-group" data-slot="L2-A4" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-A4</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L2-A5" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-A5</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L2-A6" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-A6</text></g>
               </g>
-              <g
-                class="slot-group"
-                transform="translate(50, 200)"
-                data-slot="L3"
-                data-status="empty"
-                data-floor="2"
-              >
-                <rect class="slot-bg" x="-20" y="-15" width="40" height="30" />
-                <text y="5">L3</text>
+              
+              <g transform="translate(120, 150)">
+                <g class="slot-group" data-slot="L2-A7" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-A7</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L2-A8" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-A8</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L2-A9" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-A9</text></g>
               </g>
-              <g
-                class="slot-group"
-                transform="translate(50, 250)"
-                data-slot="L4"
-                data-status="empty"
-                data-floor="2"
-              >
-                <rect class="slot-bg" x="-20" y="-15" width="40" height="30" />
-                <text y="5">L4</text>
-              </g>
-              <g
-                class="slot-group"
-                transform="translate(50, 300)"
-                data-slot="L5"
-                data-status="empty"
-                data-floor="2"
-              >
-                <rect class="slot-bg" x="-20" y="-15" width="40" height="30" />
-                <text y="5">L5</text>
+              <g transform="translate(360, 150)">
+                <g class="slot-group" data-slot="L2-A10" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-A10</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L2-A11" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-A11</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L2-A12" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-A12</text></g>
               </g>
 
-              <g
-                class="slot-group"
-                transform="translate(150, 350)"
-                data-slot="B1"
-                data-status="empty"
-                data-floor="2"
-              >
-                <rect class="slot-bg" x="-20" y="-15" width="40" height="30" />
-                <text y="5">B1</text>
+
+              <g transform="translate(120, 270)">
+                <g class="slot-group" data-slot="L2-B1" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-B1</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L2-B2" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-B2</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L2-B3" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-B3</text></g>
               </g>
-              <g
-                class="slot-group"
-                transform="translate(250, 350)"
-                data-slot="B2"
-                data-status="empty"
-                data-floor="2"
-              >
-                <rect class="slot-bg" x="-20" y="-15" width="40" height="30" />
-                <text y="5">B2</text>
+              <g transform="translate(360, 270)">
+                <g class="slot-group" data-slot="L2-B4" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-B4</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L2-B5" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-B5</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L2-B6" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-B6</text></g>
               </g>
-              <g
-                class="slot-group"
-                transform="translate(350, 350)"
-                data-slot="B3"
-                data-status="empty"
-                data-floor="2"
-              >
-                <rect class="slot-bg" x="-20" y="-15" width="40" height="30" />
-                <text y="5">B3</text>
+
+              <g transform="translate(120, 330)">
+                <g class="slot-group" data-slot="L2-B7" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-B7</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L2-B8" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-B8</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L2-B9" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-B9</text></g>
               </g>
-              <g
-                class="slot-group"
-                transform="translate(450, 350)"
-                data-slot="B4"
-                data-status="empty"
-                data-floor="2"
-              >
-                <rect class="slot-bg" x="-20" y="-15" width="40" height="30" />
-                <text y="5">B4</text>
+              <g transform="translate(360, 330)">
+                <g class="slot-group" data-slot="L2-B10" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-B10</text></g>
+                <g class="slot-group" transform="translate(60,0)" data-slot="L2-B11" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-B11</text></g>
+                <g class="slot-group" transform="translate(120,0)" data-slot="L2-B12" data-status="empty" data-floor="2"><rect class="slot-bg" x="-25" y="-20" width="50" height="40"/><text y="5">L2-B12</text></g>
               </g>
             </g>
 
             <path id="routePath" class="route" d="" />
-            <circle
-              id="carMarker"
-              r="8"
-              fill="var(--blue)"
-              stroke="#fff"
-              stroke-width="2"
-              style="display: none"
-            />
+            <circle id="carMarker" r="6" fill="var(--blue)" stroke="#fff" stroke-width="2" style="display: none" />
           </svg>
         </div>
       </main>
 
       <aside class="card controls">
-        <input type="hidden" id="entryPoint" value="50,50" />
-
         <button class="primary" id="btnSearch">CARI PARKIR KOSONG</button>
-
         <div class="result-box">
           <div class="result-meta">Rekomendasi</div>
           <div class="result-slot" id="resCode">--</div>
           <div class="result-meta" id="resDist">...</div>
           <div class="result-meta" id="resETA"></div>
         </div>
-
-        <label class="small">Status</label>
         <div class="chat" id="aiChat">System Ready.</div>
-
         <div style="display: flex; gap: 10px">
           <button id="btnClear">Reset</button>
           <button id="btnAnimateToggle">Animasi: ON</button>
         </div>
       </aside>
     </div>
-
     <script src="{{ url_for('static', filename='script.js') }}"></script>
   </body>
 </html>
