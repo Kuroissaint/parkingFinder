@@ -1,9 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("System Loading...");
+  console.log("System Restricted Roads Loaded");
 
-  // ==========================================
-  // 1. SETUP ELEMENT DOM
-  // ==========================================
   const routePath = document.getElementById("routePath");
   const carMarker = document.getElementById("carMarker");
   const resCode = document.getElementById("resCode");
@@ -13,20 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnSearch = document.getElementById("btnSearch");
   const btnClear = document.getElementById("btnClear");
   const btnAnimateToggle = document.getElementById("btnAnimateToggle");
-
-  // Ambil semua slot
   const slotEls = Array.from(document.querySelectorAll(".slot-group"));
-
-  // Cek apakah elemen ada? (Untuk debugging)
-  if (!btnSearch) {
-    console.error("Tombol btnSearch tidak ditemukan di HTML!");
-    return;
-  }
-
-  // Variabel Kontrol
   let animateOn = true;
 
-  // Toggle Animasi
   if (btnAnimateToggle) {
     btnAnimateToggle.addEventListener("click", () => {
       animateOn = !animateOn;
@@ -35,342 +21,325 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ==========================================
-  // 2. LOGIKA GANTI LANTAI
-  // ==========================================
   window.switchFloor = function (floorNum) {
     const layerF1 = document.getElementById("layer-f1");
     const layerF2 = document.getElementById("layer-f2");
+    const btnF1 = document.getElementById("btnF1");
+    const btnF2 = document.getElementById("btnF2");
 
     if (floorNum === 1) {
       if (layerF1) layerF1.style.display = "block";
       if (layerF2) layerF2.style.display = "none";
+      btnF1.classList.add("active");
+      btnF2.classList.remove("active");
     } else {
       if (layerF1) layerF1.style.display = "none";
       if (layerF2) layerF2.style.display = "block";
+      btnF1.classList.remove("active");
+      btnF2.classList.add("active");
     }
-
-    // Update Tombol Active
-    const btns = document.querySelectorAll(".btn-floor");
-    btns.forEach((btn) => btn.classList.remove("active"));
-    if (btns[floorNum - 1]) btns[floorNum - 1].classList.add("active");
   };
 
   // ==========================================
-  // 3. GRAPH DATA (DENAH BARU: TENGAH & PINGGIR)
+  // 1. MEMBANGUN GRAPH JALAN (RESTRICTED)
   // ==========================================
-  const nodes = {
-    // --- LANTAI 1 (Ground) ---
-    F1_Start: { x: 550, y: 390, floor: 1, id: "F1_Start" },
-    F1_Ent: { x: 550, y: 350, floor: 1, id: "F1_Ent" },
-    F1_Right: { x: 550, y: 200, floor: 1, id: "F1_Right" },
-    F1_RampUp: { x: 550, y: 50, floor: 1, id: "F1_RampUp" },
-    F1_Top: { x: 300, y: 50, floor: 1, id: "F1_Top" },
-    F1_Left: { x: 50, y: 200, floor: 1, id: "F1_Left" },
-    F1_Exit: { x: 50, y: 350, floor: 1, id: "F1_Exit" },
-    F1_Bot: { x: 300, y: 350, floor: 1, id: "F1_Bot" },
+  const nodes = {};
+  const edges = {};
 
-    // Akses Grid Tengah Lt 1
-    F1_Center_Top: { x: 300, y: 120, floor: 1, id: "F1_Center_Top" },
-    F1_Center_Bot: { x: 300, y: 250, floor: 1, id: "F1_Center_Bot" },
+  function addNode(id, x, y, floor) {
+    nodes[id] = { id, x, y, floor };
+    edges[id] = [];
+  }
+  
+  function connect(id1, id2) {
+    if (nodes[id1] && nodes[id2]) {
+        if (!edges[id1].includes(id2)) edges[id1].push(id2);
+        if (!edges[id2].includes(id1)) edges[id2].push(id1);
+    }
+  }
 
-    // --- LANTAI 2 (Upper) ---
-    F2_Arr: { x: 550, y: 50, floor: 2, id: "F2_Arr" },
-    F2_Right: { x: 550, y: 200, floor: 2, id: "F2_Right" },
-    F2_Bot: { x: 300, y: 350, floor: 2, id: "F2_Bot" },
-    F2_Left: { x: 50, y: 200, floor: 2, id: "F2_Left" },
-    F2_RampDown: { x: 50, y: 50, floor: 2, id: "F2_RampDown" },
+  // DEFINISI JALAN
+  const Y_ROADS = [50, 210, 370]; // Jalan Atas, Tengah, Bawah
+  
+  // Titik Referensi Horizontal (Kolom Slot)
+  const X_ALL = [50, 120, 180, 240, 300, 360, 420, 480, 550];
+  
+  // [PENTING] Hanya X ini yang boleh jadi jalan vertikal (naik-turun)
+  // X=50 (Kiri), X=300 (Tengah), X=550 (Kanan)
+  const X_VERTICAL_ROADS = [50, 300, 550]; 
 
-    F2_CornerBR: { x: 550, y: 350, floor: 2, id: "F2_CornerBR" },
-    F2_CornerBL: { x: 50, y: 350, floor: 2, id: "F2_CornerBL" },
-    F2_CornerTL: { x: 50, y: 50, floor: 2, id: "F2_CornerTL" },
-  };
+  [1, 2].forEach(floor => {
+    const f = `F${floor}`;
+    
+    // A. Buat Semua Titik Node
+    Y_ROADS.forEach(y => {
+        X_ALL.forEach(x => {
+            addNode(`${f}_${x}_${y}`, x, y, floor);
+        });
+    });
 
-  const edges = {
-    // F1
-    F1_Start: ["F1_Ent"],
-    F1_Ent: ["F1_Right", "F1_Bot"],
-    F1_Right: ["F1_RampUp", "F1_Center_Top", "F1_Center_Bot"],
-    F1_RampUp: ["F1_Top", "F2_Arr"], // NAIK
-    F1_Top: ["F1_Center_Top", "F1_Left"],
-    F1_Center_Top: ["F1_Center_Bot", "F1_Left", "F1_Right"],
-    F1_Center_Bot: ["F1_Bot", "F1_Left", "F1_Right"],
-    F1_Bot: ["F1_Exit", "F1_Ent"],
-    F1_Left: ["F1_Exit"],
-    F1_Exit: [],
+    // B. Hubungkan HORIZONTAL (Semua boleh jalan samping)
+    // Ini membuat "Lorong" di depan slot
+    Y_ROADS.forEach(y => {
+        for (let i = 0; i < X_ALL.length - 1; i++) {
+            connect(`${f}_${X_ALL[i]}_${y}`, `${f}_${X_ALL[i+1]}_${y}`);
+        }
+    });
 
-    // F2
-    F2_Arr: ["F2_Right"],
-    F2_Right: ["F2_CornerBR"],
-    F2_CornerBR: ["F2_Bot"],
-    F2_Bot: ["F2_CornerBL"],
-    F2_CornerBL: ["F2_Left"],
-    F2_Left: ["F2_CornerTL"],
-    F2_CornerTL: ["F2_RampDown"],
-    F2_RampDown: ["F1_Left"], // TURUN
-  };
+    // C. Hubungkan VERTIKAL (HANYA DI JALAN UTAMA)
+    // Ini kuncinya biar gak nerobos slot!
+    X_VERTICAL_ROADS.forEach(x => {
+        connect(`${f}_${x}_50`, `${f}_${x}_210`);  // Atas <-> Tengah
+        connect(`${f}_${x}_210`, `${f}_${x}_370`); // Tengah <-> Bawah
+    });
+  });
+
+  // Koneksi Pintu & Ramp
+  addNode("Start", 550, 400, 1);
+  connect("Start", "F1_550_370"); // Masuk ke Jalan Bawah Kanan
+  connect("F1_550_50", "F2_550_50"); // Ramp Naik
 
   // ==========================================
-  // 4. API & DATABASE
+  // 2. PATHFINDING (A*)
   // ==========================================
+  function heuristic(a, b) { 
+      // Manhattan distance agar jalurnya kotak-kotak
+      return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); 
+  }
+  
+  function aStar(startId, goalId) {
+      const open = new Set([startId]);
+      const cameFrom = {};
+      const gScore = {};
+      const fScore = {};
+      
+      for (const k in nodes) { gScore[k] = Infinity; fScore[k] = Infinity; }
+      gScore[startId] = 0;
+      fScore[startId] = heuristic(nodes[startId], nodes[goalId]);
+      
+      while (open.size) {
+        let current = null, bestF = Infinity;
+        open.forEach((nid) => { 
+            if (fScore[nid] < bestF) { bestF = fScore[nid]; current = nid; } 
+        });
+
+        if (current === goalId) {
+          const path = []; 
+          let cur = current; 
+          while (cur) { path.push(nodes[cur]); cur = cameFrom[cur]; } 
+          return path.reverse();
+        }
+
+        open.delete(current);
+        
+        for (const neigh of edges[current]) {
+          let dist = heuristic(nodes[current], nodes[neigh]);
+          if (nodes[current].floor !== nodes[neigh].floor) dist += 5000;
+          
+          const tentative = gScore[current] + dist;
+          if (tentative < gScore[neigh]) { 
+              cameFrom[neigh] = current; 
+              gScore[neigh] = tentative; 
+              fScore[neigh] = tentative + heuristic(nodes[neigh], nodes[goalId]); 
+              open.add(neigh); 
+          }
+        }
+      }
+      return null;
+  }
+
+  // --- Nearest Node (Snap ke Jalan Terdekat) ---
+  function nearestNode(x, y, floor) {
+    let best = null, min = Infinity;
+    for (const k in nodes) {
+      const n = nodes[k];
+      if (n.floor !== floor) continue;
+      // Hanya snap ke node yang SEJAJAR secara X atau Y (Biar lurus)
+      if (Math.abs(n.x - x) > 5 && Math.abs(n.y - y) > 5) continue;
+
+      const d = Math.abs(n.x - x) + Math.abs(n.y - y);
+      if (d < min) { min = d; best = n; }
+    }
+    return best;
+  }
+
+  // ==========================================
+  // 3. TARGETING LOGIC
+  // ==========================================
+  
+  function getSlotPos(slotEl) {
+    // Ambil posisi slot (Tengah Kotak)
+    const parentT = slotEl.parentElement.getAttribute("transform");
+    const parentM = /translate\(\s*([-\d.]+)[ ,]+([-\d.]+)\s*\)/.exec(parentT);
+    const parentX = parentM ? parseFloat(parentM[1]) : 0;
+    const parentY = parentM ? parseFloat(parentM[2]) : 0;
+
+    const elT = slotEl.getAttribute("transform");
+    const elM = elT ? /translate\(\s*([-\d.]+)[ ,]+([-\d.]+)\s*\)/.exec(elT) : null;
+    const elX = elM ? parseFloat(elM[1]) : 0;
+    const elY = elM ? parseFloat(elM[2]) : 0;
+
+    const f = parseInt(slotEl.getAttribute("data-floor") || "1");
+    
+    // Posisi absolut tengah slot (tanpa offset aneh-aneh)
+    return { x: parentX + elX, y: parentY + elY, floor: f };
+  }
+
+  function buildRoute(startPt, targetPt) {
+    // 1. Cari titik jalan terdekat dari Mobil
+    const startNode = nearestNode(startPt.x, startPt.y, startPt.floor);
+    
+    // 2. Cari titik jalan terdekat dari Slot Tujuan (PENTING!)
+    // Ini akan mencari node di Y=50, 210, atau 370 yang X-nya sejajar dengan slot.
+    const targetNode = nearestNode(targetPt.x, targetPt.y, targetPt.floor);
+    
+    if (!startNode || !targetNode) return null;
+    
+    // 3. Cari jalan antar Node Jalan Raya
+    const nodePath = aStar(startNode.id, targetNode.id);
+    if (!nodePath) return null;
+    
+    // 4. Susun Jalur: Mobil -> Jalan -> Jalan -> Masuk Slot
+    const points = [startPt];
+    nodePath.forEach((n) => points.push(n));
+    points.push(targetPt); // Garis terakhir masuk ke slot
+    return points;
+  }
+
+  // --- API & RENDER ---
   async function loadParkingData() {
     try {
       const response = await fetch("/api/slots");
-      if (!response.ok) throw new Error("Server Error");
-      const data = await response.json();
-      slotEls.forEach((el) => {
-        const code = el.getAttribute("data-slot");
-        if (data[code]) el.setAttribute("data-status", data[code]);
-      });
-      console.log("Data loaded from DB");
-    } catch (error) {
-      console.warn("Mode Offline / DB Error:", error);
-    }
+      if (response.ok) {
+          const data = await response.json();
+          slotEls.forEach((el) => {
+            const code = el.getAttribute("data-slot");
+            if (data[code]) el.setAttribute("data-status", data[code]);
+          });
+      }
+    } catch (e) { console.log("Offline Mode"); }
   }
   loadParkingData();
 
-  // Klik Slot
   slotEls.forEach((el) => {
     el.addEventListener("click", async () => {
       const cur = el.getAttribute("data-status");
       const code = el.getAttribute("data-slot");
       const next = cur === "empty" ? "occupied" : "empty";
-
       el.setAttribute("data-status", next);
-
       try {
         await fetch("/api/update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: code, status: next }),
         });
-      } catch (e) {
-        console.error("Gagal update DB", e);
-      }
-
-      // Jika slot rekomendasi diambil, cari ulang
-      if (el.classList.contains("best") && next === "occupied") {
-        findParking();
-      }
+      } catch (e) {}
+      if (el.classList.contains("best") && next === "occupied") findParking();
     });
   });
 
-  // ==========================================
-  // 5. ALGORITMA A*
-  // ==========================================
-  function heuristic(a, b) {
-    return Math.hypot(a.x - b.x, a.y - b.y);
-  }
-  function neighbors(id) {
-    return edges[id] || [];
-  }
-
-  function aStar(startId, goalId) {
-    const open = new Set([startId]);
-    const cameFrom = {};
-    const gScore = {};
-    const fScore = {};
-    for (const k in nodes) {
-      gScore[k] = Infinity;
-      fScore[k] = Infinity;
-    }
-
-    gScore[startId] = 0;
-    fScore[startId] = heuristic(nodes[startId], nodes[goalId]);
-
-    while (open.size) {
-      let current = null,
-        bestF = Infinity;
-      open.forEach((nid) => {
-        if (fScore[nid] < bestF) {
-          bestF = fScore[nid];
-          current = nid;
-        }
-      });
-
-      if (current === goalId) {
-        const path = [];
-        let cur = current;
-        while (cur) {
-          path.push(nodes[cur]);
-          cur = cameFrom[cur];
-        }
-        return path.reverse();
-      }
-
-      open.delete(current);
-      for (const neigh of neighbors(current)) {
-        let dist = heuristic(nodes[current], nodes[neigh]);
-        if (nodes[current].floor !== nodes[neigh].floor) dist += 100; // Penalty beda lantai
-
-        const tentative = gScore[current] + dist;
-        if (tentative < gScore[neigh]) {
-          cameFrom[neigh] = current;
-          gScore[neigh] = tentative;
-          fScore[neigh] = tentative + heuristic(nodes[neigh], nodes[goalId]);
-          open.add(neigh);
-        }
-      }
-    }
-    return null;
-  }
-
-  function nearestNode(x, y, floor) {
-    let best = null,
-      min = Infinity;
-    for (const k in nodes) {
-      const n = nodes[k];
-      if (n.floor !== floor) continue;
-      const d = Math.hypot(n.x - x, n.y - y);
-      if (d < min) {
-        min = d;
-        best = n;
-      }
-    }
-    return best;
-  }
-
-  function getSlotPos(slotEl) {
-    const t = slotEl.getAttribute("transform");
-    const m = /translate\(\s*([-\d.]+)[ ,]+([-\d.]+)\s*\)/.exec(t);
-    const f = parseInt(slotEl.getAttribute("data-floor") || "1");
-    return { x: parseFloat(m[1]), y: parseFloat(m[2]), floor: f };
-  }
-
-  function buildRoute(startPt, targetPt) {
-    const startNode = nearestNode(startPt.x, startPt.y, startPt.floor);
-    const targetNode = nearestNode(targetPt.x, targetPt.y, targetPt.floor);
-    if (!startNode || !targetNode) return null;
-
-    const nodePath = aStar(startNode.id, targetNode.id);
-    if (!nodePath) return null;
-
-    const points = [startPt];
-    nodePath.forEach((n) => points.push(n));
-    points.push(targetPt);
-    return points;
-  }
-
-  // ==========================================
-  // 6. FUNGSI UTAMA (FIND PARKING)
-  // ==========================================
   function resetUI() {
     routePath.setAttribute("d", "");
     routePath.classList.remove("show");
     resCode.textContent = "--";
-    resCode.style.color = "var(--blue)";
-    resDist.textContent = "...";
-    resETA.textContent = "";
     slotEls.forEach((s) => s.classList.remove("best"));
     carMarker.style.display = "none";
-    cancelAnimationFrame(animFrame);
   }
-
   if (btnClear) btnClear.addEventListener("click", resetUI);
 
-  function findParking() {
-    try {
-      console.log("Mencari Parkir...");
-      resetUI();
-
-      // Start Point: Kanan Bawah
-      const startPt = { x: 550, y: 390, floor: 1 };
-
-      const empties = slotEls.filter(
-        (s) => s.getAttribute("data-status") === "empty"
-      );
-      if (empties.length === 0) {
-        resCode.textContent = "PENUH";
-        resCode.style.color = "var(--danger)";
-        resDist.textContent = "Full";
-        aiChat.innerHTML = `<span style="color:red">Maaf!</span> Parkiran penuh.`;
-        return;
-      }
-
-      let best = null,
-        bestDist = Infinity,
-        bestPath = null;
-
-      empties.forEach((slot) => {
-        const targetPos = getSlotPos(slot);
-        const fullPath = buildRoute(startPt, targetPos);
-
-        if (fullPath) {
-          let dist = 0;
-          for (let i = 0; i < fullPath.length - 1; i++) {
-            let d = Math.hypot(
-              fullPath[i].x - fullPath[i + 1].x,
-              fullPath[i].y - fullPath[i + 1].y
-            );
-            if (fullPath[i].floor !== fullPath[i + 1].floor) d += 200;
-            dist += d;
-          }
-          if (dist < bestDist) {
-            bestDist = dist;
-            best = slot;
-            bestPath = fullPath;
-          }
-        }
-      });
-
-      if (best) {
-        best.classList.add("best");
-        const code = best.getAttribute("data-slot");
-        const floor = best.getAttribute("data-floor");
-
-        resCode.textContent = code;
-        resDist.textContent = `±${Math.round(bestDist / 10)} m`;
-        resETA.textContent = `Lantai ${floor}`;
-        aiChat.innerHTML = `Slot <b>${code}</b> di Lantai ${floor}. Ikuti garis biru.`;
-
-        window.switchFloor(parseInt(floor));
-        drawPath(bestPath);
-        if (animateOn) animateCar(bestPath);
-      } else {
-        alert("Gagal menemukan rute! Cek graph nodes.");
-      }
-    } catch (err) {
-      console.error("ERROR di findParking:", err);
-      alert("Terjadi error di script: " + err.message);
-    }
-  }
-
-  // EVENT LISTENER TOMBOL CARI
-  btnSearch.addEventListener("click", findParking);
-
-  // Gambar Garis
   function drawPath(points) {
     if (!points || points.length < 2) return;
     let d = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 1; i < points.length; i++)
-      d += ` L ${points[i].x} ${points[i].y}`;
+    for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`;
     routePath.setAttribute("d", d);
     setTimeout(() => routePath.classList.add("show"), 50);
   }
 
-  // Animasi
-  let animFrame = null;
-  function animateCar(points) {
+  function animateCar(points, onComplete) {
     const len = routePath.getTotalLength();
-    if (!len) return;
     carMarker.style.display = "block";
     const start = performance.now();
-    const dur = 3000;
+    const dur = points.length * 150; 
 
     function step(now) {
       const t = Math.min(1, (now - start) / dur);
       const pt = routePath.getPointAtLength(t * len);
       carMarker.setAttribute("cx", pt.x);
       carMarker.setAttribute("cy", pt.y);
-      if (t < 1) animFrame = requestAnimationFrame(step);
+      if (t < 1) requestAnimationFrame(step);
+      else if (onComplete) onComplete();
     }
-    animFrame = requestAnimationFrame(step);
+    requestAnimationFrame(step);
   }
 
-  // Keyboard Shortcut
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") findParking();
-  });
+  function findParking() {
+    resetUI();
+    const startPt = { x: 550, y: 400, floor: 1 };
 
-  console.log("System Ready!");
+    const allEmpties = slotEls.filter(s => s.getAttribute("data-status") === "empty");
+    if (allEmpties.length === 0) {
+      resCode.textContent = "FULL";
+      aiChat.innerHTML = "Parkiran Penuh!";
+      return;
+    }
+
+    // Prioritas: Habiskan Lt 1 dulu
+    const f1Empties = allEmpties.filter(s => parseInt(s.getAttribute("data-floor")) === 1);
+    const targetCandidates = f1Empties.length > 0 ? f1Empties : allEmpties.filter(s => parseInt(s.getAttribute("data-floor")) === 2);
+
+    let best = null, bestDist = Infinity, bestPath = null;
+
+    targetCandidates.forEach((slot) => {
+      const targetPos = getSlotPos(slot);
+      const fullPath = buildRoute(startPt, targetPos);
+      
+      if (fullPath) {
+        // Hitung total panjang jalur
+        let dist = 0;
+        for (let i = 0; i < fullPath.length - 1; i++) {
+            dist += Math.abs(fullPath[i].x - fullPath[i+1].x) + Math.abs(fullPath[i].y - fullPath[i+1].y);
+        }
+        
+        if (dist < bestDist) { 
+            bestDist = dist; 
+            best = slot; 
+            bestPath = fullPath; 
+        }
+      }
+    });
+
+    if (best) {
+      best.classList.add("best");
+      const code = best.getAttribute("data-slot");
+      const targetFloor = parseInt(best.getAttribute("data-floor"));
+      resCode.textContent = code;
+      resDist.textContent = `±${Math.round(bestDist/10)} m`;
+      resETA.textContent = `Lantai ${targetFloor}`;
+      aiChat.innerHTML = `Menuju Slot <b>${code}</b>...`;
+
+      const pathF1 = bestPath.filter(p => p.floor === 1);
+      const pathF2 = bestPath.filter(p => p.floor === 2);
+
+      if (targetFloor === 1) {
+        window.switchFloor(1);
+        drawPath(pathF1);
+        if (animateOn) animateCar(pathF1, null);
+      } else {
+        window.switchFloor(1);
+        drawPath(pathF1);
+        if (animateOn) {
+            animateCar(pathF1, () => {
+                window.switchFloor(2);
+                drawPath(pathF2);
+                animateCar(pathF2, null);
+            });
+        } else {
+            window.switchFloor(2);
+            drawPath(pathF2);
+        }
+      }
+    }
+  }
+  
+  if (btnSearch) btnSearch.addEventListener("click", findParking);
 });
